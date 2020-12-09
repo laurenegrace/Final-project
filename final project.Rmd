@@ -1,0 +1,107 @@
+---
+title: "final project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r}
+
+```
+attach(insurance)
+#the new data points
+newa=20
+news="female"
+newb=32.45
+newc=0
+newsmo="yes"
+newr="northeast"
+newchar=4000
+#adding new data points to the model 
+age=c(insurance$age,newa)
+sex=c(insurance$sex,news)
+bmi=c(insurance$bmi,newb)
+children=c(insurance$children,newc)
+smoker=c(insurance$smoker,newsmo)
+region=c(insurance$region,newr)
+charges=c(insurance$charges,newchar)
+#creating the model 
+mod=lm(charges~age+sex+bmi+children+smoker+region)
+summary(mod)
+anova(mod)
+plot(mod)
+
+#running only numerical data
+mod1=lm(charges~age+bmi+children)
+anova(mod1)
+car::vif(mod1)
+#all of these are fairly low, so it does not show evidence of multicollinearity
+
+#residual table for the model 
+resid(mod)
+rstandard(mod)
+rstudent(mod)
+residtable<-cbind(resid(mod),
+                  rstandard(mod), rstudent(mod))
+residtable[,2]
+
+#Finding best model fit
+step(lm(charges~1),direction = "forward",scope=~age+sex+bmi+children+smoker+region)
+step(lm(charges~age+sex+bmi+children+smoker+region),direction = "backward",scope=~age+sex+bmi+children+smoker+region)
+step(lm(charges~1),direction ="both",scope=~age+sex+bmi+children+smoker+region)
+#all the models give that the best fit would be to run it with only age smoker bmi and children, sex and region are not needed for the model 
+
+#running the best suggested model 
+mod2=lm(charges~age+smoker+bmi+children)
+anova(mod2)
+AIC(mod2)
+car:: vif(mod2)
+X=c(rep(1,length(charges)),age,smoker,bmi,children)
+H= X%*%(solve(t(X)%*%X))%*%t(X)
+#checking relationship with bmi 
+plot(bmi,charges)
+newbmi1=(1/bmi)
+plot(newbmi1,charges)
+newbmi2=(log(bmi))
+plot(newbmi2,charges)
+#checking relationship with age 
+plot(age,charges)
+age1=(1/age)
+plot(age1,charges)
+age2=log(age)
+plot(age2,charges)
+#checking relationship with children
+plot(children,charges)
+#checking relationship with region
+boxplot(charges~region)
+#checking relationship with smoking
+boxplot(charges~smoker)
+#checking relationship with sex 
+boxplot(charges~sex)
+
+
+
